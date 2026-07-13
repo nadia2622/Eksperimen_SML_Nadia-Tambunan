@@ -1,0 +1,40 @@
+name: Preprocessing Data Otomatis
+
+on:
+  push:
+    paths:
+      - 'preprocessing/automate_Nadia-Tambunan.py'
+      - 'preprocessing/student_raw/**'
+      - '.github/workflows/preprocessing.yml'
+  workflow_dispatch:
+
+jobs:
+  run-preprocessing:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+      
+    - name: Set up Python 3.12
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12.7'
+        
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pandas numpy scikit-learn
+        
+    - name: Run Automate Preprocessing
+      run: |
+        cd preprocessing
+        python automate_Nadia-Tambunan.py --input_dir student_raw --output_dir student_preprocessing
+        
+    - name: Commit Hasil Preprocessing
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        git add preprocessing/student_preprocessing/
+        # Commit hanya jika ada perubahan pada data
+        git diff --quiet && git diff --staged --quiet || (git commit -m "Auto-update hasil preprocessing" && git push)
